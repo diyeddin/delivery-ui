@@ -26,21 +26,22 @@ export default function OwnerDashboard() {
       .catch(console.error);
   };
 
-  // useEffect(() => {
-  //   client.get('/stores/me')
-  //     .then(res => {
-  //       const stores = res.data;
-  //       if (stores.length > 0) {
-  //         // AUTO-REDIRECT to the single store manager
-  //         navigate(`/owner/store/${stores[0].id}`);
-  //       } else {
-  //         // Stay here and show create form
-  //         setShowCreate(true); 
-  //       }
-  //     })
-  //     .catch(console.error);
-  // }, []);
-
+  useEffect(() => {
+    // Check if user has a store
+    client.get('/stores/me')
+      .then(res => {
+        const stores = res.data;
+        if (stores.length > 0) {
+          // AUTO-REDIRECT to the single store manager
+          navigate(`/owner/store/${stores[0].id}`);
+        } else {
+          // If no store exists, stay here to let them create one
+          setShowCreate(true); 
+        }
+      })
+      .catch(console.error);
+  }, []);
+  
   useEffect(() => {
     fetchStores();
   }, []);
