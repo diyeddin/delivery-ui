@@ -1,12 +1,16 @@
 import { Outlet } from 'react-router-dom';
-import CustomerNavbar from './CustomerNavbar';
+import PublicNavbar from './PublicNavbar';
 
 export default function CustomerLayout() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <CustomerNavbar />
-      {/* Outlet renders the child route (Explore, Orders, etc.) */}
-      <Outlet />
+      {/* The Single Source of Truth Navbar */}
+      <PublicNavbar />
+      
+      {/* Content Area */}
+      <main>
+        <Outlet />
+      </main>
     </div>
   );
 }

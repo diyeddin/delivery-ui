@@ -1,10 +1,11 @@
+// src/context/CartContext.tsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 export interface CartItem {
   product_id: number;
   store_id: number;
-  store_name: string; // Helpful for grouping
+  store_name: string;
   name: string;
   price: number;
   quantity: number;
@@ -18,18 +19,22 @@ interface CartContextType {
   clearCart: () => void;
   total: number;
   itemCount: number;
+  // NEW: Control the drawer visibility
+  isCartOpen: boolean; 
+  setIsCartOpen: (isOpen: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  // Initialize from LocalStorage if available
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('mall_cart');
     return saved ? JSON.parse(saved) : [];
   });
+  
+  // NEW: State for the UI Drawer
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Save to LocalStorage whenever cart changes
   useEffect(() => {
     localStorage.setItem('mall_cart', JSON.stringify(cart));
   }, [cart]);
@@ -46,6 +51,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prev, newItem];
     });
+    // UX Improvement: Auto-open drawer when adding an item
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (productId: number) => {
@@ -68,7 +75,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, total, itemCount }}>
+    <CartContext.Provider value={{ 
+      cart, addToCart, removeFromCart, updateQuantity, clearCart, total, itemCount,
+      isCartOpen, setIsCartOpen 
+    }}>
       {children}
     </CartContext.Provider>
   );
