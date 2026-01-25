@@ -15,6 +15,7 @@ import Explore from './pages/customer/Explore';
 import CustomerLayout from './components/CustomerLayout'; // Import
 import Profile from './pages/customer/Profile'; // Import
 import Fulfillment from './pages/owner/Fulfillment';
+import StoreManager from './pages/owner/StoreManager';
 
 
 // 1. Dispatcher: Decides which dashboard to show based on Role
@@ -60,7 +61,8 @@ export default function App() {
 
             {/* --- OWNER ROUTES --- */}
             <Route path="/owner" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
-            <Route path="/owner/store/:id" element={<ProtectedRoute><StoreManage /></ProtectedRoute>} />
+            {/* <Route path="/owner/store/:id" element={<ProtectedRoute><StoreManage /></ProtectedRoute>} /> */}
+            <Route path="/owner/store/:id" element={<ProtectedRoute><StoreManager /></ProtectedRoute>} />
             <Route path="/owner/fulfillment" element={<ProtectedRoute><Fulfillment /></ProtectedRoute>} />
 
           </Routes>
