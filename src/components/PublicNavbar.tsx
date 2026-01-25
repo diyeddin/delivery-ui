@@ -55,10 +55,10 @@ export default function PublicNavbar() {
                   Log in
                 </Link>
                 <Link 
-                  to="/login" 
+                  to="/signup" 
                   className="bg-black text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Get Started
+                  Sign Up
                 </Link>
               </>
             )}

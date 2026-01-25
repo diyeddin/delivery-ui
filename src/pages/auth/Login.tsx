@@ -35,6 +35,8 @@ export default function Login() {
         navigate('/driver');
       } else if (role === 'store_owner') {
         navigate('/owner');
+      } else if(role === 'admin') {
+        navigate('/admin');
       } else {
         // Customers go to Explore, NOT Home ('/')
         navigate('/explore'); 

@@ -4,7 +4,6 @@ import Login from './pages/auth/Login';
 import DriverDashboard from './pages/driver/Dashboard';
 import StorePage from './pages/customer/Store';
 import OwnerDashboard from './pages/owner/Dashboard';
-import StoreManage from './pages/owner/StoreManage';
 import PublicHome from './pages/PublicHome';
 import CustomerOrders from './pages/customer/Orders';
 import type { JSX } from 'react';
@@ -16,6 +15,8 @@ import CustomerLayout from './components/CustomerLayout'; // Import
 import Profile from './pages/customer/Profile'; // Import
 import Fulfillment from './pages/owner/Fulfillment';
 import StoreManager from './pages/owner/StoreManager';
+import Register from './pages/auth/Register';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 
 // 1. Dispatcher: Decides which dashboard to show based on Role
@@ -37,6 +38,7 @@ export default function App() {
         <Toaster position="top-right" />
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Register />} />
             
             {/* PUBLIC HOME (Landing Page) */}
             <Route path="/" element={<PublicHome />} />
@@ -61,9 +63,11 @@ export default function App() {
 
             {/* --- OWNER ROUTES --- */}
             <Route path="/owner" element={<ProtectedRoute><OwnerDashboard /></ProtectedRoute>} />
-            {/* <Route path="/owner/store/:id" element={<ProtectedRoute><StoreManage /></ProtectedRoute>} /> */}
             <Route path="/owner/store/:id" element={<ProtectedRoute><StoreManager /></ProtectedRoute>} />
             <Route path="/owner/fulfillment" element={<ProtectedRoute><Fulfillment /></ProtectedRoute>} />
+
+            {/* Admin Route */}
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
           </Routes>
         </BrowserRouter>
