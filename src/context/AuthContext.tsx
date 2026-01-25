@@ -7,6 +7,8 @@ interface User {
   email: string;
   role: 'admin' | 'store_owner' | 'driver' | 'customer';
   sub: string;
+  name?: string;    // <--- ADD THIS
+  id?: number;      // <--- ADD THIS
 }
 
 interface AuthContextType {

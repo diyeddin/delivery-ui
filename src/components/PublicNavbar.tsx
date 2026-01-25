@@ -90,7 +90,7 @@ export default function PublicNavbar() {
                 className="flex items-center gap-3 pl-4 border-l border-gray-200 hover:opacity-80 transition"
               >
                 <div className="text-right hidden lg:block">
-                  <p className="text-sm font-bold text-gray-900 leading-none">{user.sub}</p> {/* user.name doesnt exist */}
+                  <p className="text-sm font-bold text-gray-900 leading-none">{user.name || user.sub}</p>
                   <p className="text-xs text-gray-500 mt-1 capitalize">{user.role.replace('_', ' ')}</p>
                 </div>
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 border border-gray-200">
