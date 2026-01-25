@@ -1,12 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShoppingBag, ArrowRight, User } from 'lucide-react';
+import { ShoppingBag, User } from 'lucide-react';
 
 export default function PublicNavbar() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Helper to send logged-in users to their correct dashboard
   const handleDashboardClick = () => {
     if (user?.role === 'driver') navigate('/driver');
     else if (user?.role === 'store_owner') navigate('/owner');
@@ -14,53 +13,60 @@ export default function PublicNavbar() {
   };
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="fixed w-full z-50 transition-all duration-500 bg-cream-50/80 backdrop-blur-md border-b border-cream-200/50">
+      <div className="max-w-7xl mx-auto px-6 md:px-12">
+        <div className="flex justify-between items-center h-24">
           
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="bg-gray-900 text-white p-1.5 rounded-lg group-hover:bg-blue-600 transition-colors">
-              <ShoppingBag className="w-6 h-6" />
+          {/* Logo - Minimalist & Chic */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="bg-charcoal-900 text-cream-50 p-2 rounded-sm group-hover:bg-gold-500 transition-colors duration-500">
+              <ShoppingBag className="w-5 h-5" />
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">
-              Mall<span className="text-blue-600">App</span>
-            </span>
+            <div className="flex flex-col">
+              <span className="text-xl font-display font-bold text-charcoal-900 tracking-widest uppercase leading-none">
+                Golden Rose
+              </span>
+            </div>
           </Link>
 
-          {/* Center Links (Optional - good for SEO/Navigation) */}
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#stores" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition">Stores</a>
-            <a href="#features" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition">How it Works</a>
-            <a href="#map" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition">Map</a>
+          {/* Center Links - Uppercase & Spaced */}
+          <div className="hidden md:flex items-center gap-10">
+            {['Maison', 'Boutiques', 'Gastronomy', 'Map'].map((item) => (
+              <a 
+                key={item} 
+                href={`#${item.toLowerCase()}`} 
+                className="text-xs font-bold text-charcoal-600 hover:text-gold-500 transition-colors uppercase tracking-[0.2em]"
+              >
+                {item}
+              </a>
+            ))}
           </div>
 
           {/* Right Action Button */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             {user ? (
               <button 
                 onClick={handleDashboardClick}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-4 py-2 rounded-full text-sm font-bold transition"
+                className="flex items-center gap-2 text-charcoal-900 hover:text-gold-600 transition"
               >
-                <User className="w-4 h-4" />
-                <span>{user.sub}</span>
-                <ArrowRight className="w-4 h-4 ml-1 opacity-50" />
+                <User className="w-5 h-5" />
+                <span className="text-xs font-bold uppercase tracking-widest border-b border-transparent hover:border-gold-500">{user.sub}</span>
               </button>
             ) : (
-              <>
-                <Link 
+              <div className="flex items-center gap-6">
+                 <Link 
                   to="/login" 
-                  className="hidden md:block text-sm font-bold text-gray-600 hover:text-black transition"
+                  className="hidden md:block text-xs font-bold text-charcoal-600 hover:text-charcoal-900 uppercase tracking-widest transition"
                 >
-                  Log in
+                  Sign In
                 </Link>
                 <Link 
                   to="/login" 
-                  className="bg-black text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="bg-charcoal-900 text-cream-50 px-8 py-3 rounded-sm text-xs font-bold uppercase tracking-widest hover:bg-gold-500 transition duration-300"
                 >
-                  Get Started
+                  Visit
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
