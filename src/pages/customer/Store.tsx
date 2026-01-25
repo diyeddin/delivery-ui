@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import client from '../../api/client';
+import { useCart } from '../../context/CartContext'; // Import Global Cart
+import toast from 'react-hot-toast';
 
 interface Product {
   id: number;
@@ -10,122 +12,98 @@ interface Product {
   description: string;
 }
 
-interface CartItem {
-  product_id: number;
-  quantity: number;
-  name: string;
-  price: number;
-}
-
 export default function StorePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCart(); // Use the global context
   const [products, setProducts] = useState<Product[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     client.get(`/stores/${id}/products`)
       .then(res => setProducts(res.data))
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [id]);
 
-  const addToCart = (product: Product) => {
-    setCart(prev => {
-      const existing = prev.find(item => item.product_id === product.id);
-      if (existing) {
-        return prev.map(item => 
-          item.product_id === product.id 
-            ? { ...item, quantity: item.quantity + 1 } 
-            : item
-        );
-      }
-      return [...prev, { product_id: product.id, quantity: 1, name: product.name, price: product.price }];
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      product_id: product.id,
+      store_id: Number(id),
+      store_name: `Store #${id}`, // Ideally fetch store name separately
+      name: product.name,
+      price: product.price,
+      quantity: 1
     });
+    toast.success(`Added ${product.name} to cart`);
   };
-
-  const placeOrder = async () => {
-    if (cart.length === 0) return;
-    setLoading(true);
-    try {
-      await client.post('/orders/', {
-        items: cart.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity
-        })),
-        delivery_address: "123 Main St, React City" // Hardcoded for demo
-      });
-      alert("Order Placed Successfully! 🎉");
-      setCart([]);
-      navigate('/');
-    } catch (err: any) {
-      alert("Failed to place order: " + (err.response?.data?.detail || err.message));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      {/* Product List */}
-      <div className="flex-1 p-8">
-        <button onClick={() => navigate('/')} className="mb-6 text-gray-600 hover:text-black">← Back to Dashboard</button>
-        <h2 className="text-3xl font-bold mb-6">Products</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          {products.map(product => (
-            <div key={product.id} className="bg-white p-6 rounded-lg shadow border border-gray-200">
-              <div className="flex justify-between">
-                <h3 className="font-bold text-lg">{product.name}</h3>
-                <span className="font-bold text-green-600">${product.price}</span>
-              </div>
-              <p className="text-gray-500 text-sm mt-2">{product.description}</p>
-              <div className="mt-4 flex justify-between items-center">
-                <span className="text-xs text-gray-500">{product.stock} in stock</span>
-                <button 
-                  onClick={() => addToCart(product)}
-                  disabled={product.stock === 0}
-                  className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:bg-gray-300"
-                >
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          ))}
+    <div className="min-h-screen bg-gray-50 p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <button 
+            onClick={() => navigate('/')} 
+            className="text-gray-600 hover:text-black font-medium flex items-center gap-2"
+          >
+            ← Back to Dashboard
+          </button>
+          
+          <button 
+             onClick={() => navigate('/cart')} 
+             className="bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-md hover:bg-blue-700 transition transform hover:scale-105 flex items-center gap-2"
+          >
+            <span>View Global Cart</span>
+            <span className="text-xl">🛒</span>
+          </button>
         </div>
-      </div>
 
-      {/* Cart Sidebar */}
-      <div className="w-full md:w-96 bg-white border-l border-gray-200 p-8 shadow-xl">
-        <h2 className="text-2xl font-bold mb-6">Your Cart 🛒</h2>
-        {cart.length === 0 ? (
-          <p className="text-gray-500">Your cart is empty.</p>
+        {/* Content */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-500">Loading products...</div>
         ) : (
-          <div className="space-y-4">
-            {cart.map(item => (
-              <div key={item.product_id} className="flex justify-between items-center border-b pb-2">
-                <div>
-                  <div className="font-medium">{item.name}</div>
-                  <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
-                </div>
-                <div className="font-bold">${(item.price * item.quantity).toFixed(2)}</div>
-              </div>
-            ))}
+          <div>
+            <h2 className="text-3xl font-bold mb-6 text-gray-900">Store Products</h2>
             
-            <div className="pt-4 border-t border-gray-200">
-              <div className="flex justify-between text-xl font-bold mb-6">
-                <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+            {products.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+                <p className="text-gray-500 text-lg">This store hasn't added any products yet.</p>
               </div>
-              <button 
-                onClick={placeOrder}
-                disabled={loading}
-                className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:opacity-50"
-              >
-                {loading ? "Processing..." : "Place Order"}
-              </button>
-            </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {products.map(product => (
+                  <div key={product.id} className="bg-white p-6 rounded-xl shadow-sm hover:shadow-lg transition border border-gray-100 flex flex-col h-full">
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-gray-900 leading-tight">{product.name}</h3>
+                        <span className="font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md text-sm">
+                          ${product.price}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-sm mb-4 line-clamp-3">
+                        {product.description || "No description available."}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
+                      <span className={`text-xs font-medium ${product.stock > 0 ? 'text-gray-500' : 'text-red-500'}`}>
+                        {product.stock > 0 ? `${product.stock} in stock` : 'Out of Stock'}
+                      </span>
+                      
+                      <button 
+                        onClick={() => handleAddToCart(product)}
+                        disabled={product.stock === 0}
+                        className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {product.stock > 0 ? 'Add to Cart' : 'Sold Out'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

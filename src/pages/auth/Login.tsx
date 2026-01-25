@@ -25,7 +25,20 @@ export default function Login() {
       login(res.data.access_token);
       
       // Redirect based on role logic will happen in App.tsx or here
-      navigate('/');
+      // navigate('/');
+
+      // NEW LOGIC (Change to this):
+      const tokenData = JSON.parse(atob(res.data.access_token.split('.')[1]));
+      const role = tokenData.role;
+      
+      if (role === 'driver') {
+        navigate('/driver');
+      } else if (role === 'store_owner') {
+        navigate('/owner');
+      } else {
+        // Customers go to Explore, NOT Home ('/')
+        navigate('/explore'); 
+      }
     } catch (err) {
       setError('Invalid credentials');
     }
