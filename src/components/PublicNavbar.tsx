@@ -125,7 +125,7 @@ export default function PublicNavbar() {
 
               {/* Dropdown */}
               {userDropdownOpen && (
-                <div className="absolute right-0 top-14 w-60 bg-onyx border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in-up overflow-hidden">
+                <div className="absolute right-0 top-14 w-60 bg-onyx/95 border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in-up overflow-hidden">
                   {dashboard && (
                     <div className="px-2 pb-2 mb-2 border-b border-white/10">
                       <Link 
