@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { 
@@ -11,6 +11,8 @@ export default function PublicNavbar() {
   const { user, logout } = useAuth();
   const { itemCount, setIsCartOpen } = useCart();
   const navigate = useNavigate();
+  const location = useLocation(); // <--- 1. Get current route
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   
@@ -19,7 +21,6 @@ export default function PublicNavbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Changed threshold to 20px for quicker response
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
@@ -54,10 +55,14 @@ export default function PublicNavbar() {
 
   const dashboard = getDashboardLink();
 
+  // 2. LOGIC: Navbar is "Dark" if we are scrolled OR if we are NOT on the home page
+  const isHomePage = location.pathname === '/';
+  const showDarkNavbar = isScrolled || !isHomePage;
+
   return (
     <nav 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${
-        isScrolled 
+        showDarkNavbar 
           ? 'bg-onyx/95 backdrop-blur-md shadow-xl py-3' 
           : 'bg-transparent py-6'
       }`}
@@ -66,8 +71,8 @@ export default function PublicNavbar() {
         
         {/* LEFT: Logo & Main Navigation */}
         <div className="flex items-center gap-12">
-          <Link to={user ? "/explore" : "/"} className="group flex flex-col items-start leading-none">
-            <span className={`font-serif text-2xl tracking-wide transition-colors duration-300 ${isScrolled ? 'text-gold-500' : 'text-white'}`}>
+          <Link to="/" className="group flex flex-col items-start leading-none">
+            <span className={`font-serif text-2xl tracking-wide transition-colors duration-300 ${showDarkNavbar ? 'text-gold-500' : 'text-white'}`}>
               Golden Rose
             </span>
             <span className="text-[10px] uppercase tracking-[0.2em] opacity-80 group-hover:text-gold-400 transition">
@@ -79,7 +84,7 @@ export default function PublicNavbar() {
             <Link 
               to="/explore" 
               className={`flex items-center gap-2 text-sm font-medium transition-all duration-300 px-4 py-2 rounded-full border ${
-                isScrolled 
+                showDarkNavbar 
                   ? 'border-white/10 hover:border-gold-500/50 text-gray-200 hover:text-gold-400' 
                   : 'border-white/20 hover:bg-white/10 text-white'
               }`}

@@ -71,16 +71,16 @@ export default function MallMap({ stores }: MallMapProps) {
         </svg>
 
         {/* Legend */}
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur border border-gold-200 p-2 rounded-lg shadow-sm text-xs text-onyx flex flex-col gap-2">
-           <div className="flex items-center gap-2">
-             <div className="w-3 h-3 bg-white border border-gold-500"></div>
-             <span>Occupied Boutique</span>
-           </div>
-           <div className="flex items-center gap-2">
-             <div className="w-3 h-3 bg-gold-200/50 border border-dashed border-gray-400"></div>
-             <span>Available for Lease</span>
-           </div>
-        </div>
+        {/* <div className="absolute top-4 right-4 bg-white/90 backdrop-blur border border-gold-200 p-2 rounded-lg shadow-sm text-xs text-onyx flex flex-col gap-2"> */}
+           {/* <div className="flex items-center gap-2"> */}
+             {/* <div className="w-3 h-3 bg-white border border-gold-500"></div> */}
+             {/* <span>Occupied Boutique</span> */}
+           {/* </div> */}
+           {/* <div className="flex items-center gap-2"> */}
+             {/* <div className="w-3 h-3 bg-gold-200/50 border border-dashed border-gray-400"></div> */}
+             {/* <span>Available for Lease</span> */}
+           {/* </div> */}
+        {/* </div> */}
 
       </div>
     </div>

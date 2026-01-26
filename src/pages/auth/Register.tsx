@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import client from '../../api/client';
 import toast from 'react-hot-toast';
-import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -16,16 +16,14 @@ export default function Register() {
     setLoading(true);
     
     try {
-      // Matches your backend: /signup endpoint and 'name' field
       await client.post('/auth/signup', {
         email,
         password,
         name 
       });
-      toast.success("Account created! Please log in.");
+      toast.success("Account created! Please sign in.");
       navigate('/login');
     } catch (err: any) {
-      // Handle backend errors (e.g., "Email already registered")
       const errorMessage = err.response?.data?.detail || "Registration failed";
       toast.error(errorMessage);
     } finally {
@@ -34,34 +32,44 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-gray-100 animate-fade-in-up">
+    <div className="min-h-screen bg-creme flex items-center justify-center p-4 relative overflow-hidden">
+       {/* Decorative Elements */}
+       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gold-200/20 blur-[120px] rounded-full pointer-events-none"></div>
+       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-onyx/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gold-100 animate-fade-in-up relative z-10">
         
         {/* Header Section */}
-        <div className="bg-blue-600 p-8 text-center relative overflow-hidden">
-          {/* Decorative background circle */}
-          <div className="absolute top-0 left-0 w-full h-full bg-white/5 pointer-events-none"></div>
+        <div className="bg-onyx p-8 text-center relative overflow-hidden">
+          {/* BACK BUTTON */}
+          <Link 
+            to="/" 
+            className="absolute top-6 left-6 text-gray-500 hover:text-white transition flex items-center gap-2 text-xs font-bold uppercase tracking-widest group z-20"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Home
+          </Link>
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gold-500/10 to-transparent pointer-events-none"></div>
           
-          <div className="mx-auto bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm shadow-inner">
-            <UserPlus className="w-8 h-8 text-white" />
+          <div className="mx-auto w-16 h-16 rounded-full border border-gold-500/30 flex items-center justify-center mb-4 text-gold-400 bg-white/5 backdrop-blur-sm">
+            <UserPlus className="w-7 h-7" />
           </div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">Join MallApp</h2>
-          <p className="text-blue-100 mt-2 font-medium">Create your customer account</p>
+          <h2 className="text-3xl font-serif text-white tracking-wide">Join Us</h2>
+          <p className="text-gray-400 mt-2 text-xs uppercase tracking-widest">Create your customer account</p>
         </div>
 
         {/* Form Section */}
-        <div className="p-8">
+        <div className="p-8 bg-white">
           <form onSubmit={handleSubmit} className="space-y-5">
             
-            {/* Full Name Input */}
+            {/* Full Name */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
               <div className="relative group">
-                <User className="absolute left-3 top-3 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                <User className="absolute left-4 top-3.5 text-gray-400 w-5 h-5 group-focus-within:text-gold-500 transition-colors" />
                 <input
                   type="text"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition bg-gray-50/50 focus:bg-white text-onyx"
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -69,15 +77,15 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Email Input */}
+            {/* Email */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-3 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                <Mail className="absolute left-4 top-3.5 text-gray-400 w-5 h-5 group-focus-within:text-gold-500 transition-colors" />
                 <input
                   type="email"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition bg-gray-50/50 focus:bg-white text-onyx"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -85,15 +93,15 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Password Input */}
+            {/* Password */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Password</label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5 group-focus-within:text-blue-500 transition-colors" />
+                <Lock className="absolute left-4 top-3.5 text-gray-400 w-5 h-5 group-focus-within:text-gold-500 transition-colors" />
                 <input
                   type="password"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50 focus:bg-white"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:border-gold-500 focus:ring-1 focus:ring-gold-500 outline-none transition bg-gray-50/50 focus:bg-white text-onyx"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -104,23 +112,23 @@ export default function Register() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-onyx hover:bg-gray-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-onyx/20 transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Creating Account...
                 </>
               ) : (
-                "Sign Up"
+                <>Sign Up <ArrowRight className="w-5 h-5 text-gold-500" /></>
               )}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-500">
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center text-sm text-gray-500 font-light">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-600 font-bold hover:text-blue-800 transition">
-              Log in here
+            <Link to="/login" className="text-gold-600 font-bold hover:text-gold-800 transition">
+              Sign in here
             </Link>
           </div>
         </div>
