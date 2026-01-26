@@ -121,7 +121,7 @@ export default function StorePage() {
             {/* Search within Store */}
             <div className="relative w-full md:w-80">
               {/* FIX 2: Added 'z-20' and 'pointer-events-none' to ensure sharpness over the blurred input */}
-              <Search className="absolute left-4 top-3.5 text-gray-400 w-4 h-4 z-20 pointer-events-none" />
+              <Search className="absolute left-4 top-3 text-gray-400 w-6 h-6 z-20 pointer-events-none" />
               <input 
                 type="text" 
                 placeholder={`Search ${store.name}...`}

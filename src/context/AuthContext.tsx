@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import LoadingScreen from '../components/LoadingScreen'; // <--- IMPORT THIS
+import LoadingScreen from '../components/LoadingScreen';
+import { storage } from '../utils/storage'; // <--- Import the adapter
 
 interface User {
   email: string;
@@ -14,8 +15,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string) => void;
-  logout: () => void;
+  login: (token: string) => Promise<void>; // Login is now Async
+  logout: () => Promise<void>;            // Logout is now Async
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -23,49 +24,73 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 1. INITIAL LOAD (Runs once on mount)
   useEffect(() => {
-    const initializeAuth = () => {
-      if (token) {
-        try {
-          const decoded = jwtDecode<User>(token);
+    const loadTokenFromStorage = async () => {
+      try {
+        const storedToken = await storage.getToken(); // <--- Abstracted Call
+        
+        if (storedToken) {
+          const decoded = jwtDecode<User>(storedToken);
+          // Optional: Add expiration check here later
+          setToken(storedToken);
           setUser(decoded);
-          localStorage.setItem('token', token);
-        } catch (e) {
-          console.error("Invalid token");
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
         }
-      } else {
-        localStorage.removeItem('token');
-        setUser(null);
+      } catch (e) {
+        console.error("Failed to load auth token", e);
+        await storage.removeToken();
+      } finally {
+        // Add artificial delay for "Premium App Feel" (and to ensure fonts load)
+        setTimeout(() => setIsLoading(false), 800);
       }
-      
-      // Simulate a small delay for the "Premium Feel" (optional, prevents flickering)
-      setTimeout(() => setIsLoading(false), 500); 
     };
 
-    initializeAuth();
-  }, [token]);
+    loadTokenFromStorage();
+  }, []);
 
-  const login = (newToken: string) => {
-    setToken(newToken);
+  // 2. LOGIN HANDLER
+  const login = async (newToken: string) => {
+    try {
+      const decoded = jwtDecode<User>(newToken);
+      
+      // Update State
+      setToken(newToken);
+      setUser(decoded);
+      
+      // Persist to Storage (Async)
+      await storage.setToken(newToken); 
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
-  const logout = () => {
+  // 3. LOGOUT HANDLER
+  const logout = async () => {
+    // Clear State
     setToken(null);
     setUser(null);
-    localStorage.removeItem('token');
-    window.location.href = '/login';
+    
+    // Clear Storage (Async)
+    await storage.removeToken();
+
+    // NOTE: We removed window.location.href. 
+    // In React Native, the Router observes the 'user' state 
+    // and automatically switches stacks when it becomes null.
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
-      {/* USE THE NEW COMPONENT HERE */}
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      logout, 
+      isAuthenticated: !!user, 
+      isLoading 
+    }}>
       {isLoading ? (
         <LoadingScreen text="Verifying Credentials..." />
       ) : (
