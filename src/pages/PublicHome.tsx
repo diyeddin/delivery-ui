@@ -34,17 +34,21 @@ export default function PublicHome() {
       <PublicNavbar />
 
       {/* 1. LUXURY HERO SECTION */}
-      {/* Used a high-quality Unsplash image of a mall atrium */}
       <div className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
         
-        {/* Background Image with Ken Burns Effect */}
+        {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center z-0 animate-ken-burns"
           style={{ backgroundImage: `url(${heroImage})` }}
         ></div>
         
-        {/* Elegant Dark Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-onyx/90 via-onyx/40 to-creme z-10"></div>
+        {/* FIX: Double Overlay for Better Text Contrast */}
+        {/* Layer 1: Uniform dark tint (50% opacity) to darken the whole image */}
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
+        
+        {/* Layer 2: Gradient to blend Top (Navbar) and Bottom (Page content) */}
+        {/* from-onyx/80 handles the navbar area, to-creme blends into the next section */}
+        <div className="absolute inset-0 bg-gradient-to-b from-onyx/80 via-transparent to-creme z-10"></div>
 
         {/* Hero Content */}
         <div className="relative z-20 text-center max-w-4xl px-4 mt-20">
@@ -59,7 +63,7 @@ export default function PublicHome() {
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-light max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-200">
+          <p className="text-xl md:text-2xl text-gray-100 mb-10 font-light max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-200 drop-shadow-md">
             Experience the finest selection of boutiques, dining, and lifestyle, delivered directly to your door.
           </p>
           
@@ -89,7 +93,6 @@ export default function PublicHome() {
             <p className="text-gray-500">Click on any boutique to visit instantly.</p>
           </div>
           
-          {/* Map Component Container */}
           <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4">
             <MallMap stores={stores} />
           </div>
@@ -127,7 +130,6 @@ export default function PublicHome() {
                       <span className="bg-white text-onyx px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Closed</span>
                     </div>
                   )}
-                  {/* Hover Overlay */}
                   <div className="absolute inset-0 bg-gold-900/20 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                 </div>
 

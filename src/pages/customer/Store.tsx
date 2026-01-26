@@ -4,6 +4,7 @@ import client from '../../api/client';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
 import { ArrowLeft, ShoppingBag, Star, MapPin, Search } from 'lucide-react';
+import LoadingScreen from '../../components/LoadingScreen'; // <--- IMPORT THIS
 
 interface Product {
   id: number;
@@ -69,19 +70,12 @@ export default function StorePage() {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-creme pt-20">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-gold-200 border-t-gold-600 rounded-full animate-spin"></div>
-        <p className="text-gold-600 font-serif italic">Entering Boutique...</p>
-      </div>
-    </div>
-  );
+  // FIX 1: Use the global LoadingScreen component
+  if (loading) return <LoadingScreen text="Entering Boutique..." />;
 
   if (!store) return <div className="min-h-screen bg-creme pt-32 text-center text-onyx font-serif text-xl">Store not found</div>;
 
   return (
-    // FIX 1: Removed 'pt-20' here so banner hits the top
     <div className="min-h-screen bg-creme pb-20 selection:bg-gold-500 selection:text-white">
       
       {/* 1. STORE HERO HEADER (Luxury Banner) */}
@@ -89,7 +83,7 @@ export default function StorePage() {
         {/* Background Glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-        {/* FIX 2: Added 'pt-28' here to push content down below fixed navbar */}
+        {/* Content Container */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 relative z-10">
           <button 
             onClick={() => navigate('/explore')} 
@@ -126,11 +120,12 @@ export default function StorePage() {
 
             {/* Search within Store */}
             <div className="relative w-full md:w-80">
-              {/* <Search className="absolute left-4 top-3.5 text-gray-500 w-4 h-4" /> */}
+              {/* FIX 2: Added 'z-20' and 'pointer-events-none' to ensure sharpness over the blurred input */}
+              <Search className="absolute left-4 top-3.5 text-gray-400 w-4 h-4 z-20 pointer-events-none" />
               <input 
                 type="text" 
                 placeholder={`Search ${store.name}...`}
-                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:bg-white/20 focus:border-gold-500 rounded-full outline-none transition backdrop-blur-sm"
+                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:bg-white/20 focus:border-gold-500 rounded-full outline-none transition backdrop-blur-sm relative z-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

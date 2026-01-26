@@ -1,14 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import client from '../api/client';
+import LoadingScreen from '../components/LoadingScreen'; // <--- IMPORT THIS
 
 interface User {
   email: string;
   role: 'admin' | 'store_owner' | 'driver' | 'customer';
   sub: string;
-  name?: string;    // <--- ADD THIS
-  id?: number;      // <--- ADD THIS
+  name?: string;
+  id?: number;
 }
 
 interface AuthContextType {
@@ -17,27 +17,39 @@ interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode<User>(token);
-        setUser(decoded);
-        localStorage.setItem('token', token);
-      } catch (e) {
-        logout();
+    const initializeAuth = () => {
+      if (token) {
+        try {
+          const decoded = jwtDecode<User>(token);
+          setUser(decoded);
+          localStorage.setItem('token', token);
+        } catch (e) {
+          console.error("Invalid token");
+          localStorage.removeItem('token');
+          setToken(null);
+          setUser(null);
+        }
+      } else {
+        localStorage.removeItem('token');
+        setUser(null);
       }
-    } else {
-      localStorage.removeItem('token');
-      setUser(null);
-    }
+      
+      // Simulate a small delay for the "Premium Feel" (optional, prevents flickering)
+      setTimeout(() => setIsLoading(false), 500); 
+    };
+
+    initializeAuth();
   }, [token]);
 
   const login = (newToken: string) => {
@@ -46,13 +58,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setToken(null);
+    setUser(null);
     localStorage.removeItem('token');
     window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user }}>
-      {children}
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
+      {/* USE THE NEW COMPONENT HERE */}
+      {isLoading ? (
+        <LoadingScreen text="Verifying Credentials..." />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
