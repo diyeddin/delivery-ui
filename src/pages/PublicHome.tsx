@@ -3,20 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import MallMap from '../components/MallMap';
 import PublicNavbar from '../components/PublicNavbar';
-import { useAuth } from '../context/AuthContext'; // Import Auth Context
+import { useAuth } from '../context/AuthContext';
+import { ArrowRight, Star, Clock, MapPin } from 'lucide-react';
+import heroImage from '../assets/background.png';
 
 interface Store {
   id: number;
   name: string;
   category: string;
   is_active: boolean;
-  latitude?: number;
-  longitude?: number;
 }
 
 export default function PublicHome() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get current user state
+  const { user } = useAuth();
   const [stores, setStores] = useState<Store[]>([]);
 
   useEffect(() => {
@@ -25,92 +25,87 @@ export default function PublicHome() {
       .catch(console.error);
   }, []);
 
-  // Smart Navigation Handler
   const handleStartShopping = () => {
-    if (user) {
-      // If logged in, go straight to the marketplace
-      navigate('/explore');
-    } else {
-      // If guest, go to login
-      navigate('/login');
-    }
+    navigate(user ? '/explore' : '/login');
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* 1. Global Public Navbar */}
+    <div className="min-h-screen bg-creme selection:bg-gold-500 selection:text-white">
       <PublicNavbar />
 
-      {/* 2. Modern Hero Section */}
-      <div className="relative bg-gray-900 text-white overflow-hidden">
-        {/* Abstract Background Glows */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
-            <div className="absolute top-1/2 left-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl"></div>
-        </div>
+      {/* 1. LUXURY HERO SECTION */}
+      {/* Used a high-quality Unsplash image of a mall atrium */}
+      <div className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+        
+        {/* Background Image with Ken Burns Effect */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center z-0 animate-ken-burns"
+          style={{ backgroundImage: `url(${heroImage})` }}
+        ></div>
+        
+        {/* Elegant Dark Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-onyx/90 via-onyx/40 to-creme z-10"></div>
 
-        <div className="relative max-w-7xl mx-auto py-24 px-6 text-center lg:text-left lg:flex lg:items-center lg:justify-between">
-          <div className="lg:max-w-2xl">
-            <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-              The Mall, <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                Reimagined.
-              </span>
-            </h1>
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-              Shop from your favorite local stores and get it delivered in minutes.
-              Experience the future of retail with our interactive digital twin.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button 
-                onClick={handleStartShopping}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg transition shadow-lg shadow-blue-900/50 transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                Start Shopping
-              </button>
-              <button 
-                onClick={() => navigate('/signup')}
-                className="bg-white/10 backdrop-blur border border-white/20 hover:bg-white/20 text-white px-8 py-4 rounded-full font-bold text-lg transition"
-              >
-                Create Account
-              </button>
-            </div>
+        {/* Hero Content */}
+        <div className="relative z-20 text-center max-w-4xl px-4 mt-20">
+          <div className="inline-block border border-gold-500/50 px-4 py-1.5 rounded-full backdrop-blur-sm mb-6 animate-fade-in-up">
+            <span className="text-gold-400 text-xs font-bold uppercase tracking-[0.2em]">The Premier Destination</span>
           </div>
           
-          {/* Hero Illustration */}
-          <div className="hidden lg:block mt-10 lg:mt-0 relative perspective-1000">
-             <div className="w-[450px] h-[350px] bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl border border-gray-700 shadow-2xl flex items-center justify-center relative z-10 rotate-3 hover:rotate-0 transition duration-500 group overflow-hidden">
-                {/* Simulated UI inside the card */}
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519567241046-7f570eee3c9f?auto=format&fit=crop&q=80&w=800')] bg-cover opacity-30 group-hover:opacity-50 transition duration-700"></div>
-                <div className="relative z-10 bg-black/50 backdrop-blur-md px-6 py-3 rounded-xl border border-white/10">
-                  <span className="text-blue-300 font-mono text-lg font-bold flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                    Live Visualization
-                  </span>
-                </div>
-             </div>
-             <div className="absolute top-8 -right-8 w-[450px] h-[350px] bg-gray-800/30 rounded-2xl border border-gray-700/50 -z-0"></div>
+          <h1 className="text-6xl md:text-8xl font-serif text-white mb-6 drop-shadow-lg leading-tight animate-fade-in-up delay-100">
+            Golden Rose<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gold-400 to-gold-600 italic">
+               Mall
+            </span>
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-gray-200 mb-10 font-light max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-200">
+            Experience the finest selection of boutiques, dining, and lifestyle, delivered directly to your door.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-300">
+            <button 
+              onClick={handleStartShopping}
+              className="bg-gold-500 hover:bg-gold-600 text-onyx px-10 py-4 rounded-full font-bold text-lg transition-all transform hover:-translate-y-1 hover:shadow-2xl shadow-gold-500/30 flex items-center justify-center gap-2"
+            >
+              Start Shopping <ArrowRight className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={() => navigate('/explore')}
+              className="px-10 py-4 rounded-full font-bold text-lg text-white border border-white/30 hover:bg-white/10 backdrop-blur-sm transition-all"
+            >
+              Explore Map
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 3. Map Section */}
-      <div id="map" className="bg-gray-50 py-20 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4">
+      {/* 2. INTERACTIVE MAP SECTION */}
+      <div id="map" className="relative z-20 -mt-20 px-4">
+        <div className="max-w-7xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-100">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Interactive Floor Plan 🗺️</h2>
-            <p className="text-gray-500 mt-2">Tap on any store to visit instantly.</p>
+            <h2 className="text-4xl font-serif text-onyx mb-4">The Interactive Layout</h2>
+            <div className="w-24 h-1 bg-gold-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">Click on any boutique to visit instantly.</p>
           </div>
           
-          <MallMap stores={stores} />
+          {/* Map Component Container */}
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 p-4">
+            <MallMap stores={stores} />
+          </div>
         </div>
       </div>
 
-      {/* 4. Store Grid Section */}
-      <div id="stores" className="max-w-7xl mx-auto py-20 px-4">
-        <div className="flex justify-between items-end mb-8">
-           <h2 className="text-3xl font-bold text-gray-900">Featured Stores</h2>
-           <button onClick={handleStartShopping} className="text-blue-600 font-bold hover:underline">View All</button>
+      {/* 3. FEATURED BOUTIQUES */}
+      <div className="max-w-7xl mx-auto py-24 px-6">
+        <div className="flex justify-between items-end mb-12">
+           <div>
+             <h2 className="text-4xl font-serif text-onyx">Featured Boutiques</h2>
+             <p className="text-gray-500 mt-2 font-light">Curated selections from our top partners.</p>
+           </div>
+           <button onClick={handleStartShopping} className="hidden md:flex items-center gap-2 text-gold-600 font-bold hover:text-gold-700 transition">
+             View All Stores <ArrowRight className="w-4 h-4" />
+           </button>
         </div>
         
         {stores.length > 0 ? (
@@ -118,42 +113,71 @@ export default function PublicHome() {
             {stores.slice(0, 4).map(store => (
               <div 
                 key={store.id} 
-                className="group cursor-pointer flex flex-col h-full"
+                className="group cursor-pointer bg-white p-4 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-transparent hover:border-gold-200"
                 onClick={() => navigate(user ? `/store/${store.id}` : '/login')}
               >
-                <div className="aspect-[16/9] bg-gray-100 rounded-2xl mb-4 overflow-hidden shadow-sm group-hover:shadow-md transition border border-gray-100 relative">
+                <div className="aspect-[4/3] bg-gray-100 rounded-xl mb-6 overflow-hidden relative">
                   <img 
-                    src={`https://placehold.co/600x400/f3f4f6/3b82f6?text=${encodeURIComponent(store.name)}`} 
+                    src={`https://placehold.co/600x800/f3f4f6/1a1a1a?text=${encodeURIComponent(store.name)}`} 
                     alt={store.name}
-                    className="object-cover w-full h-full group-hover:scale-105 transition duration-500"
+                    className="object-cover w-full h-full group-hover:scale-110 transition duration-700 grayscale group-hover:grayscale-0"
                   />
                   {!store.is_active && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Closed</span>
+                    <div className="absolute inset-0 bg-onyx/60 backdrop-blur-[2px] flex items-center justify-center">
+                      <span className="bg-white text-onyx px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest">Closed</span>
                     </div>
                   )}
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-gold-900/20 opacity-0 group-hover:opacity-100 transition duration-300"></div>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition">
-                  {store.name}
-                </h3>
-                <p className="text-sm text-gray-500 font-medium">{store.category}</p>
+
+                <div className="text-center px-2 pb-2">
+                  <h3 className="text-xl font-serif text-onyx group-hover:text-gold-600 transition mb-2">
+                    {store.name}
+                  </h3>
+                  <div className="flex justify-center items-center gap-4 text-xs text-gray-400 font-medium uppercase tracking-wider">
+                    <span className="flex items-center gap-1"><Star className="w-3 h-3 text-gold-500" /> Premium</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                    <span>{store.category}</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-400">Loading stores...</div>
+          <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+             <p className="text-gray-400 italic font-serif">Loading luxury selections...</p>
+          </div>
         )}
       </div>
 
-      {/* 5. Footer */}
-      <footer className="bg-white py-12 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
-          <p>© 2026 MallApp Inc. Built with FastAPI & React.</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-black transition">Privacy</a>
-            <a href="#" className="hover:text-black transition">Terms</a>
-            <a href="#" className="hover:text-black transition">GitHub</a>
+      {/* 4. FOOTER */}
+      <footer className="bg-onyx text-white py-16 border-t border-gold-900/30">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-12">
+          <div className="col-span-2">
+            <h2 className="text-2xl font-serif text-gold-500 mb-6">Golden Rose Mall</h2>
+            <p className="text-gray-400 max-w-sm leading-relaxed font-light">
+              Redefining the shopping experience by blending physical luxury with digital convenience.
+            </p>
           </div>
+          <div>
+            <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-xs">Concierge</h4>
+            <ul className="space-y-4 text-gray-400 text-sm">
+              <li><a href="#" className="hover:text-gold-400 transition">Guest Services</a></li>
+              <li><a href="#" className="hover:text-gold-400 transition">Delivery Info</a></li>
+              <li><a href="#" className="hover:text-gold-400 transition">Returns</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold text-white mb-6 uppercase tracking-wider text-xs">Legal</h4>
+            <ul className="space-y-4 text-gray-400 text-sm">
+              <li><a href="#" className="hover:text-gold-400 transition">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-gold-400 transition">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/10 text-center text-xs text-gray-500">
+          <p>&copy; 2026 Golden Rose Mall Inc. All rights reserved.</p>
         </div>
       </footer>
     </div>
