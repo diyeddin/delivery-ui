@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import client from '../../api/client';
 import toast from 'react-hot-toast';
-import { RefreshCw, Package, CheckCircle, Truck } from 'lucide-react';
+import { RefreshCw, Package, CheckCircle, Truck, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Order {
   id: number;
@@ -14,6 +15,7 @@ interface Order {
 export default function Fulfillment() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     try {
@@ -52,6 +54,9 @@ export default function Fulfillment() {
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-screen bg-gray-50">
       <div className="flex justify-between items-center mb-8">
+        <button onClick={() => navigate('/owner')} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-6 font-medium">
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </button>
         <div>
             <h1 className="text-3xl font-bold text-gray-900">Fulfillment Terminal</h1>
             <p className="text-gray-500">Processing orders for Driver Pickup</p>
