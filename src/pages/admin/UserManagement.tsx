@@ -7,6 +7,7 @@ interface UserData {
   id: number;
   email: string;
   role: string;
+  created_at: string;
   is_active: boolean;
 }
 
@@ -79,6 +80,7 @@ export default function UserManagement() {
             <tr>
               <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">User</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Current Role</th>
+              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Created At</th>
               <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
             </tr>
           </thead>
@@ -94,6 +96,9 @@ export default function UserManagement() {
                     {getRoleIcon(user.role)}
                     {user.role.replace('_', ' ')}
                   </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
                   {user.role === 'customer' && (
