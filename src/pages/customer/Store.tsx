@@ -4,7 +4,7 @@ import client from '../../api/client';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
 import { ArrowLeft, ShoppingBag, Star, MapPin, Search } from 'lucide-react';
-import LoadingScreen from '../../components/LoadingScreen'; // <--- IMPORT THIS
+import LoadingScreen from '../../components/LoadingScreen'; 
 
 interface Product {
   id: number;
@@ -42,7 +42,6 @@ export default function StorePage() {
         const [storeRes, productsRes] = await Promise.all([
           client.get(`/stores/${id}`), 
           client.get(`/stores/${id}/products?t=${Date.now()}`)
-          // client.get(`/stores/${id}/products`)
         ]);
 
         setStore(storeRes.data);
@@ -74,7 +73,6 @@ export default function StorePage() {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // FIX 1: Use the global LoadingScreen component
   if (loading) return <LoadingScreen text="Entering Boutique..." />;
 
   if (!store) return <div className="min-h-screen bg-creme pt-32 text-center text-onyx font-serif text-xl">Store not found</div>;
@@ -83,15 +81,29 @@ export default function StorePage() {
     <div className="min-h-screen bg-creme pb-20 selection:bg-gold-500 selection:text-white">
       
       {/* 1. STORE HERO HEADER (Luxury Banner) */}
-      <div className="bg-onyx border-b border-gold-600/30 relative overflow-hidden">
-        {/* Background Glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="bg-onyx border-b border-gold-600/30 relative overflow-hidden min-h-[400px]">
+        
+        {/* --- BANNER IMAGE LAYER --- */}
+        {store.banner_url ? (
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={store.banner_url} 
+              alt="Store Banner" 
+              className="w-full h-full object-cover opacity-80"
+            />
+            {/* Gradient Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-onyx via-onyx/60 to-transparent"></div>
+          </div>
+        ) : (
+          /* Fallback Glow if no banner */
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gold-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        )}
 
         {/* Content Container */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12 relative z-10">
           <button 
             onClick={() => navigate('/explore')} 
-            className="text-gray-400 hover:text-gold-400 font-medium flex items-center gap-2 mb-8 transition group"
+            className="text-gray-300 hover:text-gold-400 font-medium flex items-center gap-2 mb-8 transition group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Market
           </button>
@@ -99,43 +111,36 @@ export default function StorePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="flex items-center gap-8">
               {/* Store Avatar */}
-              <div className="w-28 h-28 bg-creme rounded-full border-4 border-gold-500 flex items-center justify-center shadow-2xl overflow-hidden relative bg-white">
+              <div className="w-28 h-28 bg-creme rounded-full border-4 border-gold-500 flex items-center justify-center shadow-2xl overflow-hidden relative bg-white shrink-0">
                 {store.image_url ? (
                   <img 
-                    // Add ?t=... to force the browser to re-download the new image
                     src={`${store.image_url}?t=${store.id}`} 
                     alt={store.name} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback if the URL is broken
                       e.currentTarget.style.display = 'none'; 
                       e.currentTarget.parentElement?.classList.add('fallback-mode');
                     }}
                   />
                 ) : (
-                  // Fallback if URL is null
                   <span className="font-serif font-bold text-4xl text-onyx">{store.name.charAt(0)}</span>
                 )}
-
-                {/* Secret fallback logic for the error handler above */}
                 <span className="hidden font-serif font-bold text-4xl text-onyx absolute inset-0 flex items-center justify-center fallback-text">
                   {store.name.charAt(0)}
                 </span>
               </div>
+              
               <div>
                 <h1 className="text-4xl md:text-5xl font-serif font-bold text-white tracking-wide">{store.name}</h1>
-                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400 mt-4">
-                  <span className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-300 mt-4">
+                  <span className="flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20">
                     <ShoppingBag className="w-3 h-3 text-gold-400" /> 
                     <span className="uppercase tracking-widest text-xs font-bold">{store.category}</span>
                   </span>
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
                     <Star className="w-4 h-4 text-gold-500 fill-gold-500" /> 
-                    <span className="text-white">4.9</span> (Elite Partner)
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4 text-gray-500" /> 
-                    Suite 104 • Level 1
+                    <span className="text-white">4.9</span> 
+                    <span className="hidden sm:inline text-gray-400 ml-1">(Elite Partner)</span>
                   </span>
                 </div>
               </div>
@@ -143,12 +148,11 @@ export default function StorePage() {
 
             {/* Search within Store */}
             <div className="relative w-full md:w-80">
-              {/* FIX 2: Added 'z-20' and 'pointer-events-none' to ensure sharpness over the blurred input */}
-              <Search className="absolute left-4 top-3 text-gray-400 w-6 h-6 z-20 pointer-events-none" />
+              <Search className="absolute left-4 top-3 text-gray-300 w-6 h-6 z-20 pointer-events-none" />
               <input 
                 type="text" 
                 placeholder={`Search ${store.name}...`}
-                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-gray-500 focus:bg-white/20 focus:border-gold-500 rounded-full outline-none transition backdrop-blur-sm relative z-10"
+                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 text-white placeholder:text-gray-300 focus:bg-black/50 focus:border-gold-500 rounded-full outline-none transition backdrop-blur-md relative z-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
