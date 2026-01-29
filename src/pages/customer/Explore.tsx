@@ -12,6 +12,7 @@ interface Product {
   stock: number;
   description: string;
   store_id: number; 
+  image_url?: string;
 }
 
 export default function Explore() {
@@ -120,10 +121,10 @@ export default function Explore() {
                 {products.map(product => (
                   <div key={product.id} className="group bg-white rounded-xl overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border border-transparent hover:border-gold-200 flex flex-col">
                     
-                    {/* Image Placeholder */}
+                    {/* Image */}
                     <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
                       <img 
-                        src={`https://placehold.co/400x500/f3f4f6/1a1a1a?text=${encodeURIComponent(product.name)}`} 
+                        src={product.image_url || ''} 
                         alt={product.name}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700"
                       />

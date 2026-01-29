@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import client from '../../api/client';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Plus, Edit2, Trash2, Package, Save, X, Tag } from 'lucide-react';
+import { ArrowLeft, Plus, Edit2, Trash2, Package, Save, X, Tag, Upload } from 'lucide-react'; // <--- Added Upload
+import imageCompression from 'browser-image-compression';
 
 interface Product {
   id: number;
@@ -13,6 +14,7 @@ interface Product {
   stock: number;
   is_active: boolean;
   category_name?: string; 
+  image_url?: string; // <--- Added image_url
 }
 
 export default function StoreManager() {
@@ -26,6 +28,7 @@ export default function StoreManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [submitting, setSubmitting] = useState(false); 
+  const [uploadingImage, setUploadingImage] = useState(false); // <--- New State
   
   // Form State
   const [formData, setFormData] = useState({
@@ -33,12 +36,12 @@ export default function StoreManager() {
     description: '',
     category: '',
     price: '',
-    stock: ''
+    stock: '',
+    image_url: '' // <--- Added to form state
   });
 
   const fetchData = async () => {
     try {
-      // Added timestamp to prevent browser caching: ?t=${Date.now()}
       const prodRes = await client.get(`/stores/${id}/products?t=${Date.now()}`);
       setProducts(prodRes.data);
     } catch (err) {
@@ -61,16 +64,51 @@ export default function StoreManager() {
         description: product.description || '',
         category: product.category || product.category_name || '',
         price: product.price.toString(),
-        stock: product.stock.toString()
+        stock: product.stock.toString(),
+        image_url: product.image_url || '' // <--- Load existing image
       });
     } else {
       setEditingProduct(null);
-      setFormData({ name: '', description: '', category: '', price: '', stock: '' });
+      setFormData({ name: '', description: '', category: '', price: '', stock: '', image_url: '' });
     }
     setIsModalOpen(true);
   };
 
-  // --- THE FIX IS HERE ---
+  // --- UPDATED UPLOAD HANDLER (Client-Side Compression) ---
+  const handleImageUpload = async (file: File) => {
+    // 1. Configure Compression Options
+    const options = {
+      maxSizeMB: 1,           // Target file size (e.g., max 1MB)
+      maxWidthOrHeight: 1920, // Resize if wider/taller than 1920px
+      useWebWorker: true,     // Runs in background (doesn't freeze UI)
+      fileType: "image/jpeg"  // Force convert PNGs to JPEG (optional, saves space)
+    };
+
+    try {
+      console.log(`Original size: ${file.size / 1024 / 1024} MB`);
+      
+      // 2. Compress the file locally
+      const compressedFile = await imageCompression(file, options);
+      
+      console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+
+      // 3. Upload the smaller file
+      const data = new FormData();
+      data.append('file', compressedFile);
+
+      const res = await client.post('/upload/', data, {
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 15000, // Give backend plenty of time
+      });
+
+      return res.data.url;
+    } catch (error) {
+      console.error("Compression/Upload Error:", error);
+      throw error;
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -83,33 +121,25 @@ export default function StoreManager() {
         category: formData.category,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
+        image_url: formData.image_url, // <--- Include in payload
         store_id: Number(id)
       };
 
       if (editingProduct) {
-        // 1. Wait for the server to return the UPDATED object
         const res = await client.put(`/products/${editingProduct.id}`, payload);
         const updatedProduct = res.data;
-
-        // 2. Manually update the local state array immediately
         setProducts(prevProducts => 
           prevProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p)
         );
-        
         toast.success("Product updated!");
       } else {
-        // Create Logic
         const res = await client.post('/products/', payload);
         const newProduct = res.data;
-        
-        // Add new product to the list
         setProducts(prev => [newProduct, ...prev]);
         toast.success("Product created!");
       }
       
       setIsModalOpen(false);
-      // We do NOT call fetchData() here anymore, because we already updated the state.
-      
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Operation failed");
     } finally {
@@ -177,17 +207,28 @@ export default function StoreManager() {
               <tbody className="divide-y divide-gray-100">
                 {products.map(product => (
                   <tr key={product.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4 max-w-sm">
-                      <div className="font-bold text-gray-900 mb-1">{product.name}</div>
+                    <td className="px-6 py-4 max-w-sm flex gap-4">
+                      {/* --- OPTIONAL: Thumbnail in Table --- */}
+                      {product.image_url ? (
+                        <img src={`${product.image_url}?t=${product.id}`} alt={product.name} className="w-12 h-12 rounded bg-gray-100 object-cover border border-gray-200" />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200">
+                          <Package className="w-5 h-5 text-gray-300" />
+                        </div>
+                      )}
                       
-                      <div className="text-sm text-gray-500 line-clamp-2 mb-2" title={product.description}>
-                        {product.description || 'No description provided'}
+                      <div>
+                        <div className="font-bold text-gray-900 mb-1">{product.name}</div>
+                        
+                        <div className="text-sm text-gray-500 line-clamp-2 mb-2" title={product.description}>
+                          {product.description || 'No description provided'}
+                        </div>
+                        
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                          <Tag className="w-3 h-3" />
+                          {product.category || product.category_name || 'Uncategorized'}
+                        </span>
                       </div>
-                      
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                        <Tag className="w-3 h-3" />
-                        {product.category || product.category_name || 'Uncategorized'}
-                      </span>
                     </td>
 
                     <td className="px-6 py-4 font-mono text-sm text-gray-700 align-top pt-4">
@@ -233,6 +274,58 @@ export default function StoreManager() {
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              
+              {/* --- IMAGE UPLOAD SECTION --- */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Product Image</label>
+                <div className="flex items-start gap-4">
+                  <div className="w-24 h-24 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                    {formData.image_url ? (
+                      <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="w-8 h-8 text-gray-300" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <label className={`
+                        flex items-center justify-center gap-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm font-bold text-gray-700 cursor-pointer hover:bg-gray-50 transition
+                        ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}
+                    `}>
+                        {uploadingImage ? (
+                            <span>Uploading...</span>
+                        ) : (
+                            <>
+                                <Upload className="w-4 h-4" />
+                                <span>Upload Photo</span>
+                            </>
+                        )}
+                        <input 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            disabled={uploadingImage}
+                            onChange={async (e) => {
+                                if (e.target.files?.[0]) {
+                                    setUploadingImage(true);
+                                    try {
+                                        const url = await handleImageUpload(e.target.files[0]);
+                                        setFormData(prev => ({ ...prev, image_url: url }));
+                                        toast.success("Image uploaded!");
+                                    } catch (err) {
+                                        console.error(err);
+                                        toast.error("Upload failed");
+                                    } finally {
+                                        setUploadingImage(false);
+                                    }
+                                }
+                            }}
+                        />
+                    </label>
+                    <p className="text-xs text-gray-400 mt-2">Recommended: 500x500px JPG/PNG.</p>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
                 <input 
@@ -291,9 +384,9 @@ export default function StoreManager() {
 
               <button 
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || uploadingImage}
                 className={`w-full text-white font-bold py-3 rounded-lg shadow-lg transition flex items-center justify-center gap-2 ${
-                    submitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                    (submitting || uploadingImage) ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
                 }`}
               >
                 {submitting ? 'Saving...' : <><Save className="w-4 h-4" /> Save Product</>}
