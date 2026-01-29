@@ -21,6 +21,7 @@ import CustomerOrders from './pages/customer/Orders';
 import Profile from './pages/customer/Profile';
 import StorePage from './pages/customer/Store';
 import type { JSX } from 'react';
+import StoreSettings from './pages/owner/StoreSettings';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children, allowedRoles }: { children: JSX.Element, allowedRoles?: string[] }) => {
@@ -80,7 +81,7 @@ export default function App() {
             <Route path="/owner" element={<ProtectedRoute allowedRoles={['store_owner']}><OwnerDashboard /></ProtectedRoute>} />
             <Route path="/owner/store/:id" element={<ProtectedRoute allowedRoles={['store_owner']}><StoreManager /></ProtectedRoute>} />
             <Route path="/owner/fulfillment" element={<ProtectedRoute allowedRoles={['store_owner']}><Fulfillment /></ProtectedRoute>} />
-
+            <Route path="/owner/settings" element={<ProtectedRoute allowedRoles={['store_owner']}><StoreSettings /></ProtectedRoute>} />
             {/* --- DRIVER ROUTES --- */}
             <Route path="/driver" element={<ProtectedRoute allowedRoles={['driver']}><DriverDashboard /></ProtectedRoute>} />
 

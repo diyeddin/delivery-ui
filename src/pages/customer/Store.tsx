@@ -12,6 +12,7 @@ interface Product {
   price: number;
   stock: number;
   description: string;
+  image_url?: string;
 }
 
 interface StoreDetails {
@@ -20,6 +21,8 @@ interface StoreDetails {
   category: string;
   rating?: number;
   address?: string; 
+  image_url?: string;
+  banner_url?: string;
 }
 
 export default function StorePage() {
@@ -37,11 +40,12 @@ export default function StorePage() {
       setLoading(true);
       try {
         const [storeRes, productsRes] = await Promise.all([
-          client.get(`/stores/`).then(res => res.data.find((s: any) => s.id === Number(id))),
-          client.get(`/stores/${id}/products`)
+          client.get(`/stores/${id}`), 
+          client.get(`/stores/${id}/products?t=${Date.now()}`)
+          // client.get(`/stores/${id}/products`)
         ]);
 
-        setStore(storeRes);
+        setStore(storeRes.data);
         setProducts(productsRes.data);
       } catch (err) {
         console.error(err);
@@ -95,10 +99,29 @@ export default function StorePage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div className="flex items-center gap-8">
               {/* Store Avatar */}
-              <div className="w-28 h-28 bg-creme rounded-full border-4 border-gold-500 flex items-center justify-center shadow-2xl text-onyx font-serif font-bold text-4xl">
-                {store.name.charAt(0)}
+              <div className="w-28 h-28 bg-creme rounded-full border-4 border-gold-500 flex items-center justify-center shadow-2xl overflow-hidden relative bg-white">
+                {store.image_url ? (
+                  <img 
+                    // Add ?t=... to force the browser to re-download the new image
+                    src={`${store.image_url}?t=${store.id}`} 
+                    alt={store.name} 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback if the URL is broken
+                      e.currentTarget.style.display = 'none'; 
+                      e.currentTarget.parentElement?.classList.add('fallback-mode');
+                    }}
+                  />
+                ) : (
+                  // Fallback if URL is null
+                  <span className="font-serif font-bold text-4xl text-onyx">{store.name.charAt(0)}</span>
+                )}
+
+                {/* Secret fallback logic for the error handler above */}
+                <span className="hidden font-serif font-bold text-4xl text-onyx absolute inset-0 flex items-center justify-center fallback-text">
+                  {store.name.charAt(0)}
+                </span>
               </div>
-              
               <div>
                 <h1 className="text-4xl md:text-5xl font-serif font-bold text-white tracking-wide">{store.name}</h1>
                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400 mt-4">
@@ -149,10 +172,10 @@ export default function StorePage() {
             {filteredProducts.map(product => (
               <div key={product.id} className="group bg-white rounded-xl shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border border-transparent hover:border-gold-200 overflow-hidden flex flex-col">
                 
-                {/* Product Image Placeholder */}
+                {/* Product Image */}
                 <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
                    <img 
-                      src={`https://placehold.co/400x500/f3f4f6/1a1a1a?text=${encodeURIComponent(product.name)}`}
+                      src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700"
                    />

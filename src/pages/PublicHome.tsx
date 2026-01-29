@@ -12,6 +12,7 @@ interface Store {
   name: string;
   category: string;
   is_active: boolean;
+  image_url?: string;
 }
 
 export default function PublicHome() {
@@ -121,7 +122,7 @@ export default function PublicHome() {
               >
                 <div className="aspect-[4/3] bg-gray-100 rounded-xl mb-6 overflow-hidden relative">
                   <img 
-                    src={`https://placehold.co/600x800/f3f4f6/1a1a1a?text=${encodeURIComponent(store.name)}`} 
+                    src={store.image_url} 
                     alt={store.name}
                     className="object-cover w-full h-full group-hover:scale-110 transition duration-700 grayscale group-hover:grayscale-0"
                   />

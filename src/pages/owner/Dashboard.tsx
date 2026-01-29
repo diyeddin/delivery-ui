@@ -4,6 +4,7 @@ import client from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, Plus, MapPin, Store as StoreIcon, Package, TrendingUp, AlertCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Settings } from 'lucide-react';
 
 interface Store {
   id: number;
@@ -136,7 +137,17 @@ export default function OwnerDashboard() {
               {store.category}
             </span>
           </div>
-          <button onClick={logout} className="text-gray-400 hover:text-red-600 p-2"><LogOut className="w-5 h-5" /></button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => navigate('/owner/settings')} // <--- Link to new page
+              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+              title="Store Settings"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <div className="h-6 w-px bg-gray-200 mx-1"></div>
+            <button onClick={logout} className="text-gray-400 hover:text-red-600 p-2"><LogOut className="w-5 h-5" /></button>
+          </div>
         </div>
       </header>
 
