@@ -92,7 +92,7 @@ export default function CartDrawer() {
                 onClick={() => { setIsCartOpen(false); navigate('/explore'); }} 
                 className="text-gold-600 font-bold hover:text-gold-700 uppercase tracking-widest text-xs border-b border-gold-200 pb-1"
               >
-                Explore Boutiques
+                Explore Shops
               </button>
             </div>
           ) : (

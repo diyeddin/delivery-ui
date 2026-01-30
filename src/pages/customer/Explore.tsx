@@ -69,7 +69,7 @@ export default function Explore() {
           The Collection
         </h1>
         <p className="text-gray-500 font-light max-w-2xl animate-fade-in-up delay-100">
-          Browse exclusive items from our premium boutiques, curated just for you.
+          Browse exclusive items from our premium shops, curated just for you.
         </p>
 
         {/* Luxury Search Bar */}

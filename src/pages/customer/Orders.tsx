@@ -146,7 +146,7 @@ export default function CustomerOrders() {
               <ShoppingBag className="w-10 h-10 text-gold-300" />
             </div>
             <h3 className="text-2xl font-serif text-onyx mb-2">No orders yet</h3>
-            <p className="text-gray-500 mb-8 max-w-xs mx-auto font-light">Your collection is empty. Explore our boutiques to start your journey.</p>
+            <p className="text-gray-500 mb-8 max-w-xs mx-auto font-light">Your collection is empty. Explore our shops to start your journey.</p>
             <button 
               onClick={() => navigate('/')}
               className="bg-onyx text-white px-8 py-3 rounded-full font-bold hover:bg-gold-500 hover:text-onyx transition-all shadow-lg duration-300"

@@ -65,7 +65,7 @@ export default function PublicHome() {
           </h1>
           
           <p className="text-xl md:text-2xl text-gray-100 mb-10 font-light max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-200 drop-shadow-md">
-            Experience the finest selection of boutiques, dining, and lifestyle, delivered directly to your door.
+            Experience the finest selection of shops, dining, and lifestyle, delivered directly to your door.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up delay-300">
@@ -100,11 +100,11 @@ export default function PublicHome() {
         </div>
       </div>
 
-      {/* 3. FEATURED BOUTIQUES */}
+      {/* 3. FEATURED SHOPS */}
       <div className="max-w-7xl mx-auto py-24 px-6">
         <div className="flex justify-between items-end mb-12">
            <div>
-             <h2 className="text-4xl font-serif text-onyx">Featured Boutiques</h2>
+             <h2 className="text-4xl font-serif text-onyx">Featured Shops</h2>
              <p className="text-gray-500 mt-2 font-light">Curated selections from our top partners.</p>
            </div>
            <button onClick={handleStartShopping} className="hidden md:flex items-center gap-2 text-gold-600 font-bold hover:text-gold-700 transition">
