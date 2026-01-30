@@ -53,43 +53,46 @@ export default function StoreSettings() {
   }, []);
 
   // Generic Image Upload Handler
-  const handleUpload = async (file: File, type: 'logo' | 'banner') => {
+  const handleUpload = async (file: File, uploadType: 'logo' | 'banner') => {
     // 1. Compression Config
     const options = {
-      maxSizeMB: type === 'logo' ? 0.5 : 1, // Logo smaller, Banner larger
-      maxWidthOrHeight: type === 'logo' ? 500 : 1920,
+      maxSizeMB: uploadType === 'logo' ? 0.5 : 1, // Logo smaller, Banner larger
+      maxWidthOrHeight: uploadType === 'logo' ? 500 : 1920,
       useWebWorker: true,
       fileType: "image/jpeg"
     };
 
     try {
-      if (type === 'logo') setUploadingLogo(true);
+      if (uploadType === 'logo') setUploadingLogo(true);
       else setUploadingBanner(true);
 
-      // 2. Compress
+      // 2. Compress the image (Client-side optimization)
       const compressedFile = await imageCompression(file, options);
 
-      // 3. Upload
+      // 3. Prepare Form Data
       const data = new FormData();
       data.append('file', compressedFile);
 
-      const res = await client.post('/upload/', data, {
+      // 4. Upload to API
+      // 👇 CHANGE: Added "?type=store" to target the correct cloud folder
+      const res = await client.post('/upload/?type=store', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 20000,
+        timeout: 30000, // Increased timeout for larger banner files
       });
 
-      // 4. Update State
+      // 5. Update State with new URL
       const url = res.data.url;
       setFormData(prev => ({
         ...prev,
-        [type === 'logo' ? 'image_url' : 'banner_url']: url
+        // Dynamically update the correct field based on upload type
+        [uploadType === 'logo' ? 'image_url' : 'banner_url']: url
       }));
       
-      toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} uploaded!`);
+      toast.success(`${uploadType === 'logo' ? 'Logo' : 'Banner'} uploaded!`);
 
     } catch (err) {
-      console.error(err);
-      toast.error("Upload failed");
+      console.error("Upload Error:", err);
+      toast.error("Upload failed. Please try a smaller image.");
     } finally {
       setUploadingLogo(false);
       setUploadingBanner(false);

@@ -74,33 +74,30 @@ export default function StoreManager() {
     setIsModalOpen(true);
   };
 
-  // --- UPDATED UPLOAD HANDLER (Client-Side Compression) ---
+  // --- UPDATED UPLOAD HANDLER ---
   const handleImageUpload = async (file: File) => {
     // 1. Configure Compression Options
     const options = {
-      maxSizeMB: 1,           // Target file size (e.g., max 1MB)
-      maxWidthOrHeight: 1920, // Resize if wider/taller than 1920px
-      useWebWorker: true,     // Runs in background (doesn't freeze UI)
-      fileType: "image/jpeg"  // Force convert PNGs to JPEG (optional, saves space)
+      maxSizeMB: 1,           // Keep under 1MB
+      maxWidthOrHeight: 1080, // 1080p is perfect for products (Standard square or portrait)
+      useWebWorker: true,     
+      fileType: "image/jpeg"  
     };
 
     try {
-      console.log(`Original size: ${file.size / 1024 / 1024} MB`);
-      
       // 2. Compress the file locally
       const compressedFile = await imageCompression(file, options);
       
-      console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
-
       // 3. Upload the smaller file
       const data = new FormData();
       data.append('file', compressedFile);
 
-      const res = await client.post('/upload/', data, {
+      // 👇 CHANGE: Added "?type=product"
+      const res = await client.post('/upload/?type=product', data, {
         headers: { 
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 15000, // Give backend plenty of time
+        timeout: 20000, 
       });
 
       return res.data.url;
@@ -109,6 +106,7 @@ export default function StoreManager() {
       throw error;
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
