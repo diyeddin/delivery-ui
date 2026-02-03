@@ -87,12 +87,12 @@ export default function CustomerOrders() {
           label: 'Delivered', 
           progress: 100 
         };
-      case 'cancelled': 
+      case 'canceled': 
         return { 
           color: 'text-red-800 bg-red-50 border-red-100', 
           barColor: 'bg-red-600',
           icon: <Clock className="w-4 h-4"/>, 
-          label: 'Cancelled', 
+          label: 'Canceled', 
           progress: 0 
         };
       default: 
@@ -214,7 +214,7 @@ export default function CustomerOrders() {
                     <div className="p-8">
                       
                       {/* 1. PROGRESS BAR (Color Coded) */}
-                      {!['delivered', 'cancelled'].includes(order.status) && (
+                      {!['delivered', 'canceled'].includes(order.status) && (
                         <div className="mb-10">
                           <h4 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em] mb-6">Order Status</h4>
                           <div className="relative mx-4">
