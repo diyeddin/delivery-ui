@@ -2,16 +2,24 @@ import { useEffect, useState } from 'react';
 import client from '../../api/client';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { 
-  Package, Truck, CheckCircle, Clock, 
-  ChevronDown, ShoppingBag, ArrowLeft 
+import toast from 'react-hot-toast';
+import {
+  Package, Truck, CheckCircle, Clock,
+  ChevronDown, ShoppingBag, ArrowLeft, Star, Loader2
 } from 'lucide-react';
+import RateOrderModal from '../../components/RateOrderModal';
 
 interface OrderItem {
   product_id: number;
   quantity: number;
-  product_name?: string; 
+  product_name?: string;
   price?: number;
+}
+
+interface StoreSummary {
+  id: number;
+  name: string;
+  image_url?: string;
 }
 
 interface Order {
@@ -21,12 +29,18 @@ interface Order {
   created_at?: string;
   items: OrderItem[];
   store_id: number;
+  is_reviewed?: boolean;
+  store?: StoreSummary;
 }
 
 export default function CustomerOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [rateModalOrder, setRateModalOrder] = useState<Order | null>(null);
+  const [reviewStatusMap, setReviewStatusMap] = useState<Record<number, boolean>>({});
+  const [orderStoreMap, setOrderStoreMap] = useState<Record<number, StoreSummary>>({});
+  const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
   const navigate = useNavigate();
 
   const fetchOrders = async () => {
@@ -47,7 +61,32 @@ export default function CustomerOrders() {
   }, []);
 
   const toggleOrder = (id: number) => {
-    setExpandedOrderId(prev => prev === id ? null : id);
+    setExpandedOrderId(prev => {
+      const expanding = prev !== id;
+      if (expanding) {
+        const order = orders.find(o => o.id === id);
+        if (order?.status === 'delivered' && reviewStatusMap[id] === undefined) {
+          fetchOrderDetail(id);
+        }
+      }
+      return expanding ? id : null;
+    });
+  };
+
+  const fetchOrderDetail = async (orderId: number) => {
+    setDetailLoadingId(orderId);
+    try {
+      const res = await client.get(`/orders/${orderId}`);
+      setReviewStatusMap(prev => ({ ...prev, [orderId]: res.data.is_reviewed ?? false }));
+      if (res.data.store) {
+        setOrderStoreMap(prev => ({ ...prev, [orderId]: res.data.store }));
+      }
+    } catch {
+      // If detail fetch fails, assume not reviewed so button still shows
+      setReviewStatusMap(prev => ({ ...prev, [orderId]: false }));
+    } finally {
+      setDetailLoadingId(null);
+    }
   };
 
   // --- REFINED COLOR PALETTE (Distinct but Luxury) ---
@@ -110,6 +149,31 @@ export default function CustomerOrders() {
     if (!dateString) return "Unknown Date";
     const date = new Date(dateString);
     return isNaN(date.getTime()) ? "Unknown Date" : format(date, 'MMM d, h:mm a');
+  };
+
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    if (!rateModalOrder) return;
+    const storeId = rateModalOrder.store_id;
+    const orderId = rateModalOrder.id;
+    try {
+      await client.post(`/stores/${storeId}/review?order_id=${orderId}`, { rating, comment: comment || null });
+      setReviewStatusMap(prev => ({ ...prev, [orderId]: true }));
+      toast.success('Review submitted!');
+      setRateModalOrder(null);
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
+      if (err?.response?.status === 400 && typeof detail === 'string' && detail.toLowerCase().includes('already reviewed')) {
+        setReviewStatusMap(prev => ({ ...prev, [orderId]: true }));
+        toast.error('You have already reviewed this order.');
+      } else if (err?.response?.status === 403) {
+        toast.error("You don't have permission to review this order.");
+      } else if (err?.response?.status === 404) {
+        toast.error('Order not found.');
+      } else {
+        toast.error(detail || 'Failed to submit review. Please try again.');
+      }
+      setRateModalOrder(null);
+    }
   };
 
   if (loading) return (
@@ -260,6 +324,38 @@ export default function CustomerOrders() {
                         </div>
                       </div>
 
+                      {/* 3. RATE ORDER (Delivered & Not Yet Reviewed) */}
+                      {order.status === 'delivered' && (
+                        <div className="mt-6 pt-5 border-t border-gray-100">
+                          {detailLoadingId === order.id ? (
+                            <div className="flex items-center justify-center gap-2 py-2">
+                              <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                              <span className="text-sm text-gray-400">Checking review status...</span>
+                            </div>
+                          ) : reviewStatusMap[order.id] === false ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRateModalOrder({
+                                  ...order,
+                                  store: orderStoreMap[order.id] || order.store,
+                                });
+                              }}
+                              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl
+                                         bg-onyx text-gold-400 font-bold text-xs uppercase tracking-wider
+                                         hover:bg-gray-800 transition-all shadow-lg shadow-onyx/10"
+                            >
+                              <Star className="w-4 h-4" />
+                              Rate Your Experience
+                            </button>
+                          ) : reviewStatusMap[order.id] === true ? (
+                            <div className="flex items-center justify-center gap-2 py-2">
+                              <Star className="w-4 h-4 text-gold-500 fill-gold-500" />
+                              <span className="text-sm text-gray-500 font-medium">You've reviewed this order</span>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -268,6 +364,15 @@ export default function CustomerOrders() {
           </div>
         )}
       </div>
+
+      {/* Rate Order Modal */}
+      {rateModalOrder && (
+        <RateOrderModal
+          storeName={orderStoreMap[rateModalOrder.id]?.name || rateModalOrder.store?.name || `Store #${rateModalOrder.store_id}`}
+          onClose={() => setRateModalOrder(null)}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
     </div>
   );
 }

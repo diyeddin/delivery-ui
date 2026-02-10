@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import client from '../../api/client';
 import { useCart } from '../../context/CartContext';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ShoppingBag, Star, MapPin, Search } from 'lucide-react';
-import LoadingScreen from '../../components/LoadingScreen'; 
+import { ArrowLeft, ShoppingBag, Star, MapPin, Search, User } from 'lucide-react';
+import { format } from 'date-fns';
+import LoadingScreen from '../../components/LoadingScreen';
 
 interface Product {
   id: number;
@@ -20,9 +21,19 @@ interface StoreDetails {
   name: string;
   category: string;
   rating?: number;
-  address?: string; 
+  review_count?: number;
+  description?: string;
+  address?: string;
   image_url?: string;
   banner_url?: string;
+}
+
+interface Review {
+  id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  user_name: string;
 }
 
 export default function StorePage() {
@@ -34,6 +45,10 @@ export default function StorePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'products' | 'reviews'>('products');
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +70,25 @@ export default function StorePage() {
     };
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    if (activeTab === 'reviews' && !reviewsLoaded) {
+      const fetchReviews = async () => {
+        setReviewsLoading(true);
+        try {
+          const res = await client.get(`/stores/${id}/reviews`);
+          setReviews(res.data);
+          setReviewsLoaded(true);
+        } catch (err) {
+          console.error(err);
+          toast.error("Failed to load reviews");
+        } finally {
+          setReviewsLoading(false);
+        }
+      };
+      fetchReviews();
+    }
+  }, [activeTab, id, reviewsLoaded]);
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -138,9 +172,15 @@ export default function StorePage() {
                     <span className="uppercase tracking-widest text-xs font-bold">{store.category}</span>
                   </span>
                   <span className="flex items-center gap-1 bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
-                    <Star className="w-4 h-4 text-gold-500 fill-gold-500" /> 
-                    <span className="text-white">4.9</span> 
-                    <span className="hidden sm:inline text-gray-400 ml-1">(Elite Partner)</span>
+                    <Star className="w-4 h-4 text-gold-500 fill-gold-500" />
+                    <span className="text-white">
+                      {store.rating && store.rating > 0 ? store.rating.toFixed(1) : 'New'}
+                    </span>
+                    {(store.review_count || 0) > 0 && (
+                      <span className="hidden sm:inline text-gray-400 ml-1">
+                        ({store.review_count} {store.review_count === 1 ? 'review' : 'reviews'})
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
@@ -161,8 +201,40 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* 2. PRODUCT GRID */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* 2. TAB SWITCHER */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`pb-3 mr-8 text-lg font-serif font-bold transition-colors ${
+              activeTab === 'products'
+                ? 'text-onyx border-b-2 border-gold-500'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Products
+          </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`pb-3 text-lg font-serif font-bold transition-colors ${
+              activeTab === 'reviews'
+                ? 'text-onyx border-b-2 border-gold-500'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Reviews
+            {(store.review_count || 0) > 0 && (
+              <span className="ml-2 text-sm font-sans text-gray-400">
+                ({store.review_count})
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* 3. PRODUCTS TAB */}
+      {activeTab === 'products' && (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {filteredProducts.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-2xl border border-gold-100 shadow-sm">
             <div className="w-16 h-16 bg-creme rounded-full flex items-center justify-center mx-auto mb-4 border border-gold-200">
@@ -175,18 +247,18 @@ export default function StorePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map(product => (
               <div key={product.id} className="group bg-white rounded-xl shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 border border-transparent hover:border-gold-200 overflow-hidden flex flex-col">
-                
+
                 {/* Product Image */}
                 <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
-                   <img 
+                   <img
                       src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700"
                    />
-                   
+
                    {/* Quick Add Overlay */}
                    <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition duration-300 bg-gradient-to-t from-black/80 to-transparent">
-                      <button 
+                      <button
                         onClick={() => handleAddToCart(product)}
                         disabled={product.stock === 0}
                         className="w-full bg-white text-onyx py-3 rounded-lg font-bold hover:bg-gold-400 transition flex items-center justify-center gap-2 text-sm uppercase tracking-wider shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -204,7 +276,7 @@ export default function StorePage() {
                       {product.name}
                     </h3>
                   </div>
-                  
+
                   <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1 font-light leading-relaxed">
                     {product.description || "Exclusive item from our collection."}
                   </p>
@@ -223,6 +295,32 @@ export default function StorePage() {
           </div>
         )}
       </div>
+      )}
+
+      {/* 4. REVIEWS TAB */}
+      {activeTab === 'reviews' && (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {reviewsLoading ? (
+          <div className="flex justify-center py-16">
+            <div className="w-10 h-10 border-4 border-gold-200 border-t-gold-600 rounded-full animate-spin"></div>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl border border-gold-100 shadow-sm">
+            <div className="w-16 h-16 bg-creme rounded-full flex items-center justify-center mx-auto mb-4 border border-gold-200">
+              <Star className="w-6 h-6 text-gold-500" />
+            </div>
+            <h3 className="text-xl font-serif text-onyx">No reviews yet</h3>
+            <p className="text-gray-500 font-light mt-2">Be the first to share your experience.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map(review => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+          </div>
+        )}
+      </div>
+      )}
       
       {/* Floating Cart Button (Mobile Only) */}
       <button 
@@ -232,6 +330,50 @@ export default function StorePage() {
         <ShoppingBag className="w-6 h-6" />
       </button>
 
+    </div>
+  );
+}
+
+function ReviewCard({ review }: { review: Review }) {
+  const formattedDate = (() => {
+    try {
+      return format(new Date(review.created_at), 'MMM d, yyyy');
+    } catch {
+      return 'Unknown date';
+    }
+  })();
+
+  return (
+    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:border-gold-200 transition">
+      {/* Header: Avatar + Name + Date */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-creme rounded-full flex items-center justify-center border border-gold-100">
+            <User className="w-4 h-4 text-gray-500" />
+          </div>
+          <span className="font-bold text-onyx text-sm">{review.user_name}</span>
+        </div>
+        <span className="text-xs text-gray-400">{formattedDate}</span>
+      </div>
+
+      {/* Star Rating */}
+      <div className="flex gap-0.5 mb-3">
+        {[1, 2, 3, 4, 5].map(star => (
+          <Star
+            key={star}
+            className={`w-4 h-4 ${
+              star <= review.rating
+                ? 'text-gold-500 fill-gold-500'
+                : 'text-gray-200'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Comment */}
+      {review.comment && (
+        <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+      )}
     </div>
   );
 }
