@@ -22,7 +22,7 @@ export default function PublicHome() {
 
   useEffect(() => {
     client.get('/stores/')
-      .then(res => setStores(res.data))
+      .then(res => setStores(res.data.data))
       .catch(console.error);
   }, []);
 

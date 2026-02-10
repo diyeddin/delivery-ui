@@ -35,7 +35,7 @@ export default function Explore() {
         params.append('in_stock', 'true');
         
         const res = await client.get(`/products/?${params.toString()}`);
-        setProducts(res.data);
+        setProducts(res.data.data);
       } catch (err) {
         console.error(err);
       } finally {
